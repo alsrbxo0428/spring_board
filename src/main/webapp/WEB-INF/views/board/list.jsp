@@ -13,6 +13,10 @@
   <div class="container">
   	<div class="row">
   		<h1 class="text-primary text-center">전체 글 목록</h1>
+  		<div class="col-md-12 text-right">
+	  		<a href="/user/login">로그인</a>
+	  		<a href="/user/logout">로그아웃</a>
+  		</div>
   	</div>
   	<div class="row">
   		<div class="text-body">

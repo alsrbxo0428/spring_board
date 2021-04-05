@@ -216,11 +216,7 @@
 		    <artifactId>spring-tx</artifactId>
 		    <version>5.0.7.RELEASE</version>
 		</dependency>
-				
-		
-		
-		
-		       
+			
 	</dependencies>
     <build>
         <plugins>

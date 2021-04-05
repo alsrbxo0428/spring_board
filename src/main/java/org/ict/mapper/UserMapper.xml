@@ -22,4 +22,13 @@
 		select uid from ictuser where uid = #{uid}
 	</select>
 	
+	<update id="keepLogin">
+		update ictuser set sessionkey = #{sessionId}, sessionLimit = #{next}
+		where uid= #{uid}
+	</update>
+	
+	<select id="checkUserWithSession" resultType="org.ict.domain.UserVO">
+		select * from ictuser
+		where sessionkey = #{value} and sessionLimit > now();
+	</select>
 </mapper>
