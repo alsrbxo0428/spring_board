@@ -1,5 +1,12 @@
 package org.ict.controller;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.nio.file.Files;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.UUID;
+
 import org.ict.domain.BoardVO;
 import org.ict.domain.PageMaker;
 import org.ict.domain.SearchCriteria;
@@ -10,9 +17,11 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import lombok.extern.log4j.Log4j;
+import net.coobird.thumbnailator.Thumbnailator;
 
 // 컨트롤러는 기본적으로 테이블 단위로 생성합니다.
 // 가령 게시판 테이블 관련 컨트롤러는 아래와 같이 만들고
@@ -165,8 +174,120 @@ public class BoardController {
 		return "redirect:/board/list";
 	}
 	
-
-}
+	private boolean checkImgType(File file) {
+		try {
+			String contentType = Files.probeContentType(file.toPath());
+			
+			return contentType.startsWith("image");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
+	
+	private String getFolder() {
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+		Date date = new Date();
+		String str = sdf.format(date);
+		
+		return str.replace("-", File.separator);
+	}
+	
+//	@PostMapping("/uploadAjaxAction")
+//	public void uploadAjaxPost(MultipartFile[] uploadFile) {
+//		String uploadFolder = "c:\\upload_data\\temp";
+//		
+//		File uploadPath = new File(uploadFolder, getFolder());
+//		
+//		if(uploadPath.exists() == false) {
+//			uploadPath.mkdirs();
+//		}
+//		
+//		for(MultipartFile multipartfile : uploadFile) {
+//			log.info("=====================");
+//			log.info("Upload File Name : " + multipartfile.getOriginalFilename());
+//			log.info("Upload File Size : " + multipartfile.getSize());
+//			
+//			String uploadFileName = multipartfile.getOriginalFilename();
+//			
+//			uploadFileName = uploadFileName.substring(uploadFileName.lastIndexOf("\\") + 1);
+//			
+//			UUID uuid = UUID.randomUUID();
+//			
+//			uploadFileName = uuid.toString() + "_" + uploadFileName;
+//			
+////			File saveFile = new File(uploadFolder, uploadFileName);
+//			
+//			try {
+//				File saveFile = new File(uploadPath, uploadFileName);
+//				multipartfile.transferTo(saveFile);
+//				
+//				if(checkImgType(saveFile)) {
+//					FileOutputStream thumbnail = new FileOutputStream(new File(uploadPath, "s_" + uploadFileName));
+//					
+//					Thumbnailator.createThumbnail(multipartfile.getInputStream(), thumbnail, 100, 100);
+//					thumbnail.close();
+//				}
+//			} catch (Exception e) {
+//				log.error(e.getMessage());
+//			}
+//		}//for
+//	}//uploadAjaxPost
+	
+	@PostMapping("/uploadAjaxAction")
+	public String uploadAjaxPost(MultipartFile[] uploadFile) {
+		log.info("ajax post update!");
+		
+		String uploadFolder = "C:\\upload_data\\temp";
+		
+		//폴더생성
+		File uploadPath = new File(uploadFolder, getFolder());
+		log.info("upload path : " + uploadPath);
+		
+		if(uploadPath.exists() == false) {
+			uploadPath.mkdirs();
+		}//if
+		
+		for(MultipartFile multipartFile : uploadFile) {
+			log.info("=====================");
+			log.info("Upload File Name : " + multipartFile.getOriginalFilename());
+			log.info("Upload File Size : " + multipartFile.getSize());
+			
+			String uploadFileName = multipartFile.getOriginalFilename();
+			
+			uploadFileName = uploadFileName.substring(uploadFileName.lastIndexOf("\\") + 1);
+			
+			log.info("last file name : " + uploadFileName);
+			
+			UUID uuid = UUID.randomUUID();
+			
+			uploadFileName = uuid.toString() + "_" + uploadFileName;
+			
+//			File saveFile = new File(uploadFolder, uploadFileName);
+			
+			try {
+				File saveFile = new File(uploadPath, uploadFileName);
+				multipartFile.transferTo(saveFile);
+				log.info("success!!");
+				
+				//썸네일 생성 로직
+				if(checkImgType(saveFile)) {
+					FileOutputStream thumbnail = new FileOutputStream(new File(uploadPath, "s_" + uploadFileName));
+					
+					Thumbnailator.createThumbnail(multipartFile.getInputStream(), thumbnail, 100, 100);
+					
+					thumbnail.close();
+				}//if
+				
+			} catch (Exception e) {
+				log.error(e.getMessage());
+			}//catch
+		}//for
+		
+		return "/board/list";
+	}//uploadAjaxPost
+	
+}//class
 
 
 
