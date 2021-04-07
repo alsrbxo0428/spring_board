@@ -79,6 +79,9 @@
 			<div id="replies">
 				<!-- 댓글이 들어갈 위치 -->
 			</div>
+			<ul class="pagination justify-content-center">
+				<!-- 페이지네이션 -->
+			</ul>
 		</div><!-- row -->
 		
 			<div class="row box-box-success">
@@ -222,7 +225,7 @@
 					$("#replies").html(str);
 				});
 			}
-			getAllList();
+// 			getAllList();
 			
 		
 		
@@ -323,8 +326,68 @@
 			$("#modDiv").hide("slow");
 		});
 		
-		
+		function getPageList(page) {
+			$.getJSON("/replies/" + bno + "/" + page, function(data) {
+				var str = "";
+				
+				$(data.list).each(function() {
+// 					console.log(data);
+					var timestamp = this.updatedate;
+					var date = new Date(timestamp);
+					var user = "${login.uname}";
 
+					var formattedTime = "게시일 : "+ date.getFullYear()
+										+ "/"+ (date.getMonth()+1)
+										+ "/"+ date.getDate()
+										
+					
+					str += "<div class='replyLi my-2' data-rno='" + this.rno + "'><strong>@"  
+						+ this.replyer + "</strong> - " + formattedTime + "<br>"
+						+ "<div class='replytext'>" + this.replytext + "</div>";
+						
+					if(user === this.replyer) {
+						str += "<button type='button' class='btn btn-info'>수정/삭제</button>"
+							+ "</div>";
+					} else {
+						if(user === "") {
+							str += "<a href='/user/login'>Login Please</a>";
+						}
+						str += "</div>";
+					}//else
+				});//each
+				$("#replies").html(str);
+				printPaging(data.pageMaker);
+			});//getJSON
+		}//getPageList
+		
+		function printPaging(pageMaker) {
+			var str = "";
+			
+			if(pageMaker.prev) {
+				str += "<li><a href='" + (pageMaker.startPage - 1) + "'> << </a></li>";
+			}
+			
+			for(var i = pageMaker.startPage, len = pageMaker.endPage; i <= len; i++) {
+				var strClass = pageMaker.cri.page == i ? ' active' : '';
+				str += "<li class='page-item" + strClass + "'><a href='" + i + "' class='page-link'>" + i + "</a></li>";
+			}
+			
+			if(pageMaker.next) {
+				str += "<li><a href='" + (pageMaker.endPage + 1) + "'> >> </a></li>";
+			}
+			
+			$(".pagination").html(str);
+		}//printPaging
+		
+		$(".pagination").on("click", "li a", function(e) {
+			e.preventDefault();
+			
+			replyPage = $(this).attr("href");
+			
+			getPageList(replyPage);
+		});//pagination
+		
+		getPageList(${cri.page});
 	});// $document
 	</script>
 </html>

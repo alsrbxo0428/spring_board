@@ -1,7 +1,11 @@
 package org.ict.controller;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.ict.domain.Criteria;
+import org.ict.domain.PageMaker;
 import org.ict.domain.ReplyVO;
 import org.ict.service.ReplyService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -118,16 +122,36 @@ public class ReplyController {
 		return entity;
 	}
 	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+	@GetMapping(value="/{bno}/{page}", produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
+	public ResponseEntity<Map<String, Object>> getListPage(@PathVariable("bno") int bno, @PathVariable("page") int page) {
+		ResponseEntity<Map<String, Object>> entity = null;
+		
+		Map<String, Object> result = new HashMap<>();
+		
+		Criteria cri = new Criteria();
+		
+		cri.setPage(page);
+		
+		List<ReplyVO> list = service.getListPage(bno, cri);
+		
+		int count = service.count(bno);
+		
+		PageMaker pageMaker = new PageMaker();
+		
+		pageMaker.setCri(cri);
+		pageMaker.setTotalReply(count);
+		
+		result.put("list", list);
+		result.put("pageMaker", pageMaker);
+		result.put("cri", cri);
+		
+		try {
+			entity = new ResponseEntity<>(result, HttpStatus.OK);
+		} catch (Exception e) {
+			e.printStackTrace();
+			entity = new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		}
+		
+		return entity;
+	}//getListPage
 }
